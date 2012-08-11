@@ -1,0 +1,107 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2012, Piotr Skotnicki
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+package hudson.plugins.random_string_parameter;
+
+import hudson.AbortException;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
+import hudson.model.StringParameterValue;
+import hudson.tasks.BuildWrapper;
+import java.io.IOException;
+import java.util.regex.Pattern;
+import org.kohsuke.stapler.DataBoundConstructor;
+
+/**
+ * {@link ParameterValue} created from {@link RandomStringParameterDefinition}.
+ *
+ * @author Piotr Skotnicki
+ * @since 1.0
+ */
+public class RandomStringParameterValue extends StringParameterValue {
+    private String regex = "[a-zA-Z0-9_,-]{8,}";
+
+    @DataBoundConstructor
+    public RandomStringParameterValue(String name, String value) {
+        this(name, value, null);
+    }
+
+    public RandomStringParameterValue(String name, String value, String description) {
+        super(name, value, description);
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    @Override
+    public BuildWrapper createBuildWrapper(AbstractBuild<?, ?> build) {
+        if (!Pattern.matches(regex, value)) {
+            // abort the build within BuildWrapper
+            return new BuildWrapper() {
+                @Override
+                public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+                    throw new AbortException("Invalid value for parameter [" + getName() + "] specified: " + value);
+                }
+            };
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 71;
+        int result = super.hashCode();
+        result = prime * result;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (RandomStringParameterValue.class != obj.getClass()) {
+            return false;
+        }
+        RandomStringParameterValue other = (RandomStringParameterValue)obj;
+        if (value == null) {
+            if (other.value != null) {
+                return false;
+            }
+        } else if (!value.equals(other.value)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "(RandomStringParameterValue) " + getName() + "='" + value + "'";
+    }
+}
