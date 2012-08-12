@@ -9,7 +9,7 @@
     <artifactId>random-string-parameter</artifactId>
     <packaging>hpi</packaging>
     <name>Random String Parameter Plugin</name>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <url>http://wiki.jenkins-ci.org/display/JENKINS/Random+String+Parameter+Plugin</url>
 
     <scm>
